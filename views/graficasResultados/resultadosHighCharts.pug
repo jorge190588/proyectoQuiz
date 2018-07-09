@@ -1,0 +1,257 @@
+doctype html
+html
+  head    
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(http-equiv='X-UA-Compatible', content='ie=edge')
+    title= title
+    //- link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+    //- link(rel='stylesheet', href='/stylesheets/styleChart.css')
+    //- script(src='/javascripts/jquery.js')
+    //- script(src='/javascripts/bootstrap.js')
+    script(src="/javascripts/highcharts.js")
+    script(src="/javascripts/highcharts-3d.js")
+    script(src="/javascripts/exporting.js")
+  body    
+    //h1(class="text-center") No funciona
+    div(id="containerBar" style="height: 400px")
+    div(id="containerPie" style="height: 400px")                                                                              
+    //Nav tabs
+    //ul(class="nav nav-tabs nav-justified info" role="tablist")
+      li(class="nav-item")
+        a(class="nav-link active" data-toggle="tab" href="#panelChartBar" role="tab")
+          i(class="fa fa-user") Profile
+      
+      li(class="nav-item")
+        a(class="nav-link" data-toggle="tab" href="#panelPie" role="tab")
+          i(class="fa fa-heart") Follow
+        
+    //Tab panels
+    //div(class="tab-content")
+        Panel 1
+        div(class="tab-pane fade in show active" id="panelChartBar" role="tabpanel")
+            br
+            div(id="containerBar" style="height: 400px")
+        
+        Panel 2
+        div(class="tab-pane fade" id="panelPie" role="tabpanel")
+            br
+            div(id="containerPie")                                                                              
+    
+    script.
+      
+      var resultado;
+
+      //getResultadoAjax();            
+
+      $("#btn-resultado").click(function(){        
+          getResultadoAjax();            
+      });
+
+      function getResultadoAjax()
+      {
+        $.ajax
+        (
+            {
+                url : "/ResultadoFinalJuego",
+                type : "POST",
+                contentType: "application/json",
+                //data: "{}",
+                //dataType: "json",
+                success: function(Result){
+                  //Result = Result.d;
+                  var data = [];
+                  var categoriasBarChart = [];
+                  //console.log(Result);
+                  //console.log(Result[0][0].nombre);
+                  for(var i in Result[0])
+                  {
+                    var serie = new Array(Result[0][i].nombre, Result[0][i].sumaCorrectas);
+                    data.push(serie);
+
+                    var nombres = new Array(Result[0][i].nombre);
+                    categoriasBarChart.push(nombres);
+                  }
+                  //Aqui va la funcion que pinta el grafico
+                  //console.log(data);
+                  //console.log(categoriasBarChart);
+                  PintarGraficoPie(data);
+                  PintarGraficoBar(data,categoriasBarChart);
+                },
+                error: function(jqXHR, exception) {
+                    var msg = '';
+                    if (jqXHR.status === 0) {
+                        msg = 'Not connect.\n Verify Network.';
+                    } else if (jqXHR.status == 404) {
+                        msg = 'Requested page not found. [404]';
+                    } else if (jqXHR.status == 500) {
+                        msg = 'Internal Server Error [500].';
+                    } else if (exception === 'parsererror') {
+                        msg = 'Requested JSON parse failed.';
+                    } else if (exception === 'timeout') {
+                        msg = 'Time out error.';
+                    } else if (exception === 'abort') {
+                        msg = 'Ajax request aborted.';
+                    } else {
+                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                    }
+                    alert(msg);
+                } 
+            }
+        );
+            /*
+            ).done(function(Result){                
+                var data = [];
+                var categoriasBarChart = [];
+                console.log(Result);
+                //console.log(Result[0][0].nombre);
+                for(var i in Result[0])
+                {
+                    var serie = new Array(Result[0][i].nombre, Result[0][i].sumaCorrectas);
+                    data.push(serie);
+
+                    var nombres = new Array(Result[0][i].nombre);
+                    categoriasBarChart.push(nombres);
+                }
+                //Aqui va la funcion que pinta el grafico
+                //console.log(data);
+                //console.log(categoriasBarChart);
+                PintarGraficoPie(data);
+                PintarGraficoBar(data,categoriasBarChart);
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                // handle error
+                console.log("jqXHR: "+jqXHR);
+                console.log("Status: "+textStatus);
+                console.log("Thrown: "+errorThrown);                
+            });*/
+      }     
+      /*function getResultadoAjax()
+      {
+        $.ajax
+        (
+            {
+                url : "/ResultadoFinalJuego",
+                type : "POST",
+                contentType: "application/json; charset=utf-8",
+                data: "{}",
+                dataType: "json",
+                success: function(Result){
+                  //Result = Result.d;
+                  var data = [];
+                  var categoriasBarChart = [];
+                  //console.log(Result[0][0].nombre);
+                  for(var i in Result[0])
+                  {
+                    var serie = new Array(Result[0][i].nombre, Result[0][i].sumaCorrectas);
+                    data.push(serie);
+
+                    var nombres = new Array(Result[0][i].nombre);
+                    categoriasBarChart.push(nombres);
+                  }
+                  //Aqui va la funcion que pinta el grafico
+                  //console.log(data);
+                  //console.log(categoriasBarChart);
+                  PintarGraficoPie(data);
+                  PintarGraficoBar(data,categoriasBarChart);
+                },
+                error: function(jqXHR, exception) {
+                    var msg = '';
+                    if (jqXHR.status === 0) {
+                        msg = 'Not connect.\n Verify Network.';
+                    } else if (jqXHR.status == 404) {
+                        msg = 'Requested page not found. [404]';
+                    } else if (jqXHR.status == 500) {
+                        msg = 'Internal Server Error [500].';
+                    } else if (exception === 'parsererror') {
+                        msg = 'Requested JSON parse failed.';
+                    } else if (exception === 'timeout') {
+                        msg = 'Time out error.';
+                    } else if (exception === 'abort') {
+                        msg = 'Ajax request aborted.';
+                    } else {
+                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                    }
+                    alert(msg);
+                }    
+            }
+        );
+      } */     
+
+      function PintarGraficoPie(series)
+      {
+          Highcharts.chart('containerPie', {
+            chart: {
+                type: 'pie',
+                options3d: {
+                    enabled: true,
+                    alpha: 45
+                }
+            },
+            title: {
+                text: 'RESULTADO FINAL'
+            },
+            subtitle: {
+                text: ''
+            },
+            plotOptions: {
+                pie: {
+                    innerSize: 100,
+                    depth: 45
+                }
+            },
+            //series: jsonFinal
+            series: [{
+                name: 'Total de Respuestas Correctas',                            
+                data: series                   
+            }]
+        });
+      }
+    
+
+      function PintarGraficoBar(series,categorias)
+      {
+        Highcharts.chart('containerBar', {
+          chart: {
+              type: 'column',
+              options3d: {
+                  enabled: true,
+                  alpha: 10,
+                  beta: 25,
+                  depth: 70
+              }
+          },
+          title: {
+              text: 'RESULTADO FINAL'
+          },
+          subtitle: {
+              text: ''
+          },
+          plotOptions: {
+              column: {
+                  depth: 25
+              }
+          },
+          //maxColor:[#003399],
+          xAxis: {
+              categories: categorias,//Highcharts.getOptions().lang.shortMonths,                          
+              labels: {
+                  skew3d: true,
+                  style: {
+                      fontSize: '26px'
+                  }
+              }
+          },
+          yAxis: {
+              title: {
+                  text: null
+              }
+          },
+          series: [{
+                
+                name: 'Total de Respuestas Correctas',            
+                data: series
+              
+          },
+          ]
+        });
+      }    

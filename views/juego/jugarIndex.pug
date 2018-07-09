@@ -1,0 +1,284 @@
+extends ../template/layout
+block content
+  style.
+    .margen{
+      margin-right: 50%;
+    }
+  //Id del juego oculto
+  input(type="hidden",id="idJuego",value=idJuego)
+  
+  div(class=["container-fluid"])        
+    div(class="jumbotron")      
+      h1(class="text-center") PIN PARA PARTICIPANTES       
+        strong(class="text-warning")=idJuego
+        //h4(id="timer" class="text-center") 
+      div(class='row')        
+
+        div(class="col-md-4")
+          div(class="panel panel-default")
+            div(class="panel-heading") Opciones
+            div(class="panel-body margen")
+
+              .btn-group-vertical
+
+                button(class=["btn","btn-raised","btn-success"], id="btn-empezar") Iniciar Juego        
+                  i(class="material-icons") play_circle_outline
+
+                button(class=["btn","btn-raised","btn-warning"], id="btn-terminar") Terminar Juego        
+                  i(class="material-icons") highlight_off                  
+
+                //a(class=["btn","btn-raised","btn-info"], href="/ResultadoFinalVista") Ver Resultados
+                  i(class="material-icons") pie_chart        
+                
+                button(type="button",class=["btn","btn-raised","btn-info"], data-toggle="modal", data-target="#ResultModal", id="btn-resultado") Resultados        
+                  i(class="material-icons") pie_chart        
+
+        div(class="col-md-8")
+          h2(class="text-center") Participantes en Línea  
+            strong(class="text-center text-danger" id="countUsers")           
+        
+          //div(class="col-md-6 col-md-offset-3")
+          ul(id="usuarios")            
+              
+  //if(sinDatos == undefined)
+    div(class=["container-fluid"])
+      div(class="jumbotron")
+        div(class='row')
+          div(class="col-md-6 col-sm-6 col-xs-12")
+            button(class=["btn","btn-raised","btn-success"], id="btn-empezar") Iniciar Juego        
+              i(class="material-icons") play_circle_outline
+          
+          div(class="col-md-6 col-sm-6 col-xs-12")
+            button(class=["btn","btn-raised","btn-info","pull-right"]) Ver Resultados        
+              i(class="material-icons") pie_chart
+
+        div(class="row")
+          div(class="col-md-12")
+            h2(class="text-center") Participantes en Línea  
+              strong(class="text-center text-danger" id="countUsers")           
+
+          div(class="col-md-6 col-md-offset-3")
+            ul(id="usuarios")
+              
+          //div(class="col-md-12")
+            h3(class="text-center") 
+              strong=  data[0].CantidadParticipantes
+            
+          //div(class="col-md-6 col-md-offset-3")
+            table(class="table")
+              thead
+                tr
+                  th(class="text-center active") CARNE
+                  th(class="text-center active") NOMBRE
+
+            
+              tbody
+                each datos in data
+                  tr
+                    td(class="text-center")= datos.carne
+                    td(class="text-center")= datos.nombre
+                
+      
+  
+  //else
+    div(class=["container-fluid"])
+      div(class="jumbotron")
+        button(class=["btn","btn-raised","btn-default"]) Iniciar Juegojjj
+
+        div(class="row")
+          div(class="col-md-12")
+            h2(class="text-center") Participantes en Línea  
+              strong(class="text-center text-danger" id="countUsers")           
+
+          div(class="col-md-2")
+            ul(id="usuarios",class="list-group")              
+            
+          //div(class="col-md-6 col-md-offset-3")
+            table(class="table")
+              thead
+                tr
+                  th(class="text-center active") CARNE
+                  th(class="text-center active") NOMBRE                 
+              tbody(id="participantesTbody")
+                tr(id="participantes")
+
+
+  //h1(class='text-center') Chat Jugadores y Administrador
+    div(class='jumbotron')        
+      div(class="row")
+        div(class='col-md-6')
+          div(class="form-group")
+            label(for="message") Mensaje
+            textarea(name="message", cols="10", rows="5", id="message", class="form-control")
+                
+            button(type="button", id="send-message", class="btn btn-warning btn-raised") Enviar Mensaje
+
+        div(class="col-md-6")          
+          h3 Mensajes
+          ul(id="messages")
+
+  div(class="modal fade",id="ResultModal")
+    div(class="modal-dialog" role="document")
+      div(class="modal-content")
+        div(class="modal-header")
+          //h1(class="modal-title text-center") Resultado
+          button(type="button" class="close" data-dismiss="modal" aria-label="Close")
+            span(aria-hidden="true") &times;
+          
+        div(class="modal-body")                              
+          include ../graficasResultados/resultadosHighCharts
+        
+        div(class="modal-footer")          
+          button(type="button" class="btn btn-info" data-dismiss="modal") Cerrar
+
+  //script(src="/javascripts/timerGame.js")
+  script(src="/socket.io/socket.io.js")
+  //Script de sockets
+  script.
+      
+    //VARIABLE QUE ALMACENA EL TIMER Y EL RESULTADO DEL TIMER DEBE SER GLOBAL
+    var timerIntervalData;
+
+    var socket = io();
+    // Socket real recibir el array de usuarios conectados
+    socket.on('listaUsuarios',function(usuariosConectados){
+      var html = '';
+        for(var i=0; i<usuariosConectados.length; i++){
+          html += `<li class="list-group-item"><i class="material-icons">face</i> ${usuariosConectados[i]}</li>`;
+          console.log(usuariosConectados);
+        }
+      $('#usuarios').html(html);
+    });
+
+    //Socket evento de contador de conexiones
+    socket.on('conectados',function(contadorConexiones){
+      $("#countUsers").html(contadorConexiones);
+    }); 
+
+    $("#btn-empezar").click(function(){      
+      var empezar = 1;
+      socket.emit('empezar juego',empezar);
+      //$("#btn-empezar").attr("disabled", true);
+      IniciarJuego($("#idJuego").val());
+      //iniciarTimer();
+      //iniciarTimerAjax();
+      socket.emit('timer',0,true);
+    });
+
+    socket.on('timer',function(time,terminado){
+      //console.log(time);          
+      iniciarTimer(time,terminado);            
+
+      if(!terminado)
+        terminarTimer();
+    });
+
+    $("#btn-terminar").click(function(){
+      var terminar = 0;
+      socket.emit('terminar time',terminar);      
+
+      //terminarTimer();
+    });
+
+    socket.on('terminar client',function(terminarTime){
+      //console.log('Terminar time ->'+terminarTime);
+      //$("#timer").html("Juego Terminado");
+    });
+
+    socket.on('timer terminado final',function(terminado){      
+      //stopTimer();
+    });
+    //Evento ajax para actualizar a iniciado el juego en la tabla juegos
+    function IniciarJuego(idJuego)
+    {      
+      $.ajax
+      (
+          {
+              url : "/iniciarJuego/"+idJuego,
+              type : "GET"
+          }
+      ).done(function(resp){          
+          //console.log(resp[0][0].juegoIniciado);
+
+      });      
+    }
+
+    function terminarTimer(){
+      window.clearInterval(timerIntervalData);
+    }
+
+    function iniciarTimer(timer,terminado)
+    {
+      var counter = timer;
+      var timer = $("#timer");
+      var interval = 1000;
+
+      function convertSeconds(s)
+      {
+        var min = Math.floor(s / 60);
+        var sec = s % 60;
+
+        if(min == 5)
+        {
+          //alert("debe terminar");
+
+        }
+        return min+"m : "+sec+"s";
+      }
+
+      timer.html(convertSeconds(counter));
+
+      function timeIt(){
+        counter++;
+        timer.html(convertSeconds(counter));
+      }      
+      timerIntervalData = setInterval(timeIt,interval);      
+    }       
+       
+    //Recibir el mensaje del servidor
+    /*socket.on('new jugador',function(jugador,carne,conexiones){
+      var liUsuario = $('<li>').append("<strong>Nombre: </strong>"+jugador+"  --  <strong>Carne: </strong>"+carne);
+      
+      //console.log(conexiones);
+      $('#usuarios').append(liUsuario);
+      
+      // Contando los usuarios conectados      
+      $("#countUsers").html(conexiones);
+    
+      //append al tr de tbody para poner el listado de participantes
+      /*if(conexiones > 1){
+        var trtdParticipantes = $("<tr id='trParticipantes'><td class='text-center'>").append(jugador);
+        $("participantesTbody").append(trtdParticipantes);
+
+        var trtdCarne = $("<td class='text-center'>").append(carne);
+        $("#trParticipantes").append(trtdCarne);  
+      }
+      else{
+        var tdParticipantes = $("<td class='text-center'>").append(jugador);
+        $("#participantes").append(tdParticipantes);
+
+        var tdCarne = $("<td class='text-center'>").append(carne);
+        $("#participantes").append(tdCarne);  
+      } //
+    });
+
+    socket.on('desconectado',function(conexiones){      
+      console.log(conexiones);
+      $("#countUsers").html(conexiones);
+      $("#messages").children.remove();
+    });
+
+    $("#send-message").click(function(){
+      socket.emit('new message',localStorage.getItem("admin"),$("#message").val());          
+      //alert("Click");
+      $("#message").val("");
+    });
+
+    //Recibir el mensaje procesado del server y pintarlo en todos los clientes
+    socket.on('new message',function(nameJugador,message){
+      console.log(message);
+      var liMessages = $('<li>').append("<strong>"+nameJugador+": </strong> "+message);
+      $("#messages").append(liMessages);
+    });
+
+    */     

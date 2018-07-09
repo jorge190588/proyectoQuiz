@@ -1,0 +1,283 @@
+extends ../template/layoutEspera
+block content
+  style.
+    #alerta-verde{
+      display:none;
+    }
+    #alerta-roja{
+      display:none;
+    }
+  
+  //Session del usuario oculta
+  input(type="hidden",id="sessionUsuario",value=usuario)    
+
+  if(terminado == undefined)
+    div(class="container-fluid")
+      div(class="row")
+        h1(class="col-md-12 text-right") Pregunta 
+          strong()=noPreguntaActual          
+          |  De 
+          strong()=numeroTotalPreguntas
+    //Empezar el juego campo oculto
+    input(type="hidden",id="empezar",value=data[7][0].juegoIniciado)  
+
+    div(id="contenedor-preguntas")
+      div(class="container-fluid")
+        h1(class="text-center",id="titulo") Esperando a que inicie el Juego
+
+        div(id="resultado")
+        if(correct == undefined)
+          //no mostrat ninguna alerta
+
+        div(class="row")
+          .col-md-6.col-md-offset-3
+              div(class="alert alert-dismissible alert-success" id="alerta-verde")
+                button(type="button" class="close" data-dismiss="alert") ×            
+                a(href="javascript:void(0)" class="alert-link text-center") RESPUESTA CORRECTA :)
+
+          
+          .col-md-6.col-md-offset-3
+              div(class="alert alert-dismissible alert-danger" id="alerta-roja")
+                button(type="button" class="close" data-dismiss="alert") ×            
+                a(href="javascript:void(0)" class="alert-link text-center") RESPUESTA INCORRECTA :(
+              
+        div(class='jumbotron')
+          div(class='preguntas')
+            h4(id="timer" class="text-center") 
+            p= data[0][0].pregunta
+                
+          div(class='respuestas')
+            form(method="GET" action="/ProcesarJuego/"+data[0][0].idJuego+"/"+idPreguntaSiguiente id="form" name="form")
+              //input(type="hidden" name="preguntaSiguiente", id="preguntaSiguiente", value=idPreguntaSiguiente)
+              input(type="hidden" name="respuestaCorrecta", id="respuestaCorrecta", value=correcta)
+              input(type="hidden" name="respuestaMarcada", id="respuestaMarcada")
+              input(type="hidden" name="isCorrect", id="isCorrect" value="0")
+              
+              div(class="form-group")
+                label
+                  input(type="radio",name='respuesta',onChange="execute()" value=data[2][0].respuesta)
+                  =  data[2][0].respuesta
+                br
+                label
+                  input(type="radio",name='respuesta',onChange="execute()" value=data[2][1].respuesta)
+                  =  data[2][1].respuesta
+                br
+                label
+                  input(type="radio",name='respuesta',onChange="execute()" value=data[2][2].respuesta)
+                  =  data[2][2].respuesta
+                br
+                label
+                  input(type="radio",name='respuesta',onChange="execute()" value=data[2][3].respuesta)
+                  =  data[2][3].respuesta
+                br
+        
+              div(class="form-group")
+                input(type="submit" id="enviar-pregunta" class="btn btn-raised btn-success" value="Enviar")
+  
+    //a(href="/CerrarSesion", id="desconectarJugador", class=["btn","btn-default","btn-raised"]) Desconectar
+  else
+    div(class="container-fluid")
+      input(type="hidden",id="empezar-en-terminado",value=1)  
+      div(class='jumbotron')
+        h2(class="text-center") Juego Terminado           
+        h3() Resultado del usuario 
+          strong= usuario
+        p Total de Correctas 
+          strong()= cantidadCorrectas
+        p Total de Incorrectas 
+          strong()= cantidadIncorrectas
+
+        a(href="/CerrarSesion", id="desconectarJugador", class=["btn","btn-default","btn-raised"]) Terminar                          
+    
+  script(src='https://cdn.jsdelivr.net/jquery.loadingoverlay/latest/loadingoverlay.min.js')
+  script(src='https://cdn.jsdelivr.net/jquery.loadingoverlay/latest/loadingoverlay_progress.min.js')                          
+  script(src="/socket.io/socket.io.js")
+
+  script.  
+    bloquearRadios();
+    validarInicio();
+    var segundos = 1000000000;
+    var socket = io();        
+
+    var nickname = $("#sessionUsuario").val();    
+    
+    var rCorrecta = document.getElementById('respuestaCorrecta').value;
+    var rMarcada = '';    
+    var acertada = false;
+    var cantidadCorrectas = 0;
+    var cantidadFallidas = 0;
+    function execute()
+    {
+      getRadioButtonSelectedValue(document.form.respuesta);      
+    }
+
+    //console.log(nickname);
+    socket.emit("nuevo jugador",nickname);    
+    
+    //Recibir el evento empezar juego
+    socket.on('empezar',function(empezar){
+      console.log("Evento socket empezar recibido: "+empezar);
+      $("#empezar").val(empezar);      
+      
+      segundos = 0;
+      
+      if($("#empezar").val() == 1){
+        setTimeout(function(){
+          $.LoadingOverlay("hide");
+        }, segundos);
+
+        $("#titulo").html("Juego Iniciado!");
+        $("#titulo").css("color","#fff");
+      }      
+    });    
+
+    function validarInicio()
+    {
+      if($("#empezar").val() == 1 || $("#empezar-en-terminado").val() == 1){
+        setTimeout(function(){
+          $.LoadingOverlay("hide");
+        }, 0);
+
+        $("#titulo").html("Juego Iniciado!");
+        $("#titulo").css("color","#fff");
+      }      
+    }
+    function getRadioButtonSelectedValue(NameRadio)
+    {
+        for(i=0;i<NameRadio.length;i++){
+          if(NameRadio[i].checked){
+            document.getElementById('respuestaMarcada').value = NameRadio[i].value;
+            rMarcada = document.getElementById('respuestaMarcada').value;
+
+            //desactivarRadios()
+            if(rCorrecta.toLowerCase() == rMarcada.toLowerCase()){
+              acertada = true;
+              cantidadCorrectas++;                
+              //guardar_localStorage(cantidadCorrectas);
+              //cambiar el valor a 1 si contesto correctamente el usuario
+              document.getElementById('isCorrect').value = 1;
+              document.getElementById('alerta-verde').style.display = 'block';
+              document.getElementById('alerta-roja').style.display = 'none';
+            }               
+            else{
+              acertada = false;
+              cantidadFallidas++;
+              document.getElementById('alerta-roja').style.display = 'block';
+              document.getElementById('alerta-verde').style.display = 'none';
+            }              
+            //alert("Correctas: "+cantidadCorrectas+" Fallidas: "+cantidadFallidas);              
+          }              
+        }                      
+    }
+
+    function bloquearRadios()
+    {
+      $('input:radio[name=respuesta]').click(function(){
+        $('input:radio[name=respuesta]').attr('disabled','disabled');
+      });
+    }
+
+    /*function desactivarRadios()
+    {
+      var opcionesRadios = document.getElementsByName('respuesta')
+      var marcada;
+      for(var i=0; i<opcionesRadios.length; i++)
+      {
+        if(opcionesRadios[i].checked)
+          marcada = opcionesRadios[i];
+        
+        marcada.checked = true;
+        opcionesRadios[i].checked = false;
+      }
+    }*/
+
+    function guardar_localStorage(param)
+    {    
+      //let conteoCorrectas = param;
+      //localStorage.setItem('Correctas',conteoCorrectas);
+    }
+
+    function get_localStorage()
+    {
+      //let conteoCorrectas = localStorage.getItem("Correctas");
+      //console.log(conteoCorrectas);
+    }
+
+  //Script de loading configuración  
+  script.
+
+    $.LoadingOverlay("show");
+
+    //if($("#empezar").val() == 'ok'){
+      //segundos = 0
+    //}
+      
+    // Hide it after 3 seconds    
+    setTimeout(function(){
+        $.LoadingOverlay("hide");
+    }, segundos);
+
+    function notF5()
+    {
+      history.go(1);
+          
+      document.onkeydown = function(e){
+        tecla = (document.all) ? e.keyCode : e.which;
+        //alert(tecla)
+        if (tecla = 116) {return false;}    
+      }
+    }
+  
+  script(src="/socket.io/socket.io.js")
+  //Script de sockets
+  script.
+    //VARIABLE QUE ALMACENA EL TIMER Y EL RESULTADO DEL TIMER DEBE SER GLOBAL
+    var timerIntervalData;
+    socket.on('timer',function(time,terminado){
+      //console.log(time);          
+      iniciarTimer(time,terminado);            
+
+      if(!terminado)
+        terminarTimer();
+    });
+
+    socket.on('timer terminado final',function(terminado){      
+      //stopTimer();
+    });
+
+    function terminarTimer(){
+      window.clearInterval(timerIntervalData);
+    }
+
+    function iniciarTimer(timer,terminado)
+    {
+      var counter = timer;
+      var timer = $("#timer");
+      var interval = 1000;
+
+      function convertSeconds(s)
+      {
+        var min = Math.floor(s / 60);
+        var sec = s % 60;
+
+        if(min == 5)
+        {
+          //alert("debe terminar");
+
+        }
+        return min+"m : "+sec+"s";
+      }
+
+      timer.html(convertSeconds(counter));
+
+      function timeIt(){
+        counter++;
+        timer.html(convertSeconds(counter));
+      }      
+      timerIntervalData = setInterval(timeIt,interval);      
+    }       
+      
+          
+ 
+  
+  

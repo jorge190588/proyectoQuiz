@@ -1,0 +1,24 @@
+{
+  "name": "dwsocket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eduardo Barrios",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.1",
+    "express-session": "^1.15.6",
+    "morgan": "^1.9.0",
+    "mysql": "^2.14.1",
+    "path": "^0.12.7",
+    "pug": "^2.0.0-rc.4",
+    "socket.io": "^2.0.3",
+    "url": "^0.11.0",
+    "yo-yo": "^1.4.1"
+  }
+}

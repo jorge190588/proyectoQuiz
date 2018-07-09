@@ -1,0 +1,33 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(http-equiv='X-UA-Compatible', content='ie=edge')
+    title= title
+    link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+    link(rel='stylesheet', href='/stylesheets/bootstrap-material-design.css')
+    link(rel='stylesheet', href='/stylesheets/ripples.css')
+    link(rel='stylesheet', href='/stylesheets/material-icons.css')
+    link(rel='stylesheet', href='/stylesheets/estilos.css')
+    //script(src='/javascripts/jquery.js')
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")
+    
+body(OnLoad="notF5();")
+              
+  block content
+
+  footer.navbar-fixed-bottom
+    //hr
+    p © 2017 Proyecto Desarrollo-Web, UMG / Eduardo Barrios.
+
+    
+    script(src='/javascripts/bootstrap.js')
+    script(src='/javascripts/material.js')
+    script(src='/javascripts/ripples.js')
+    
+    script(src='/javascripts/ajaxPreguntas.js')
+    script.
+      $.material.init();
+    
+    

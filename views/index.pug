@@ -1,0 +1,112 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(http-equiv='X-UA-Compatible', content='ie=edge')
+    title= title
+    link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+    link(rel='stylesheet', href='/stylesheets/bootstrap-material-design.css')
+    link(rel='stylesheet', href='/stylesheets/ripples.css')
+    link(rel='stylesheet', href='/stylesheets/material-icons.css')
+    link(rel='stylesheet', href='/stylesheets/estilos.css')
+  body
+    div(class='container-fluid',id='contenedor')
+      h1.text-center GAME-APP
+      br
+      .row
+        if mensaje != undefined
+          .col-md-6.col-md-offset-3
+            div(class="alert alert-dismissible alert-danger")
+              button(type="button" class="close" data-dismiss="alert") ×            
+              a(href="javascript:void(0)" class="alert-link text-center") ERROR!! El pin del juego no existe o es incorrecto.
+            
+        .col-md-6.col-md-offset-3
+          .panel.panel-info
+            .panel-heading
+              h3.panel-title.text-center
+                b PIN DEL JUEGO
+            .panel-body
+              form(action='/irJuego', method='post',id="form-ingresa-jugador")
+                .form-group.label-floating.has-success
+                  label.control-label(for='focusedInput') 
+                    i.mdi.mdi-fiber-pin  INGRESE EL PIN
+                  input#pin.form-control(type='text', name='pin', required)
+                  label(id="noExisteJuego" class="label label-danger") Error este pin no pertenece a ningún juego, verifique!
+
+                .form-group.label-floating.has-success
+                  label.control-label(for='focusedInput') 
+                    i.mdi.mdi-fingerprint  INGRESE SU CARNE
+                  input#carne.form-control(type='text', name='carne', onkeypress="return validarCarne(event)", onpaste="return false",required)
+
+                .form-group.label-floating.has-success
+                  label.control-label(for='focusedInput') 
+                    i.mdi.mdi-face  INGRESE SU NOMBRE
+                  input#jugador.form-control(type='text', name='nombre' ,required)
+                  button.btn.btn-raised.btn-success(type='submit',id="btn-entrar") ENTRAR
+      
+        .col-md-6.col-md-offset-3
+          p.parrafoIndex.text-center
+            | Crea un juego gratis aquí 
+            br
+            a(href='/crearCuenta') Ir
+    footer.navbar-fixed-bottom
+      hr
+      p © 2017 Proyecto Desarrollo-Web, UMG / Eduardo Barrios.
+
+    script(src='/javascripts/jquery.js')
+    script(src='/javascripts/bootstrap.js')
+    script(src='/javascripts/material.js')
+    script(src='/javascripts/ripples.js')
+    script(src="/socket.io/socket.io.js")
+    script(src="/javascripts/navigator.js")
+    script.
+      $.material.init();
+    
+    script(src="/javascripts/ajaxValidarExisteJuego.js")
+    //script(src="/javascripts/miSocket.js");
+    script.
+
+      //var yo = require('yo-yo');      
+      var socket = io();
+
+      var jugadorClient;     
+
+      /*$("#btn-entrarJuego").click(function(){
+        //guardar el nombre del jugador en localStorage
+        localStorage.setItem('name-jugador',$('#jugador').val());
+        localStorage.setItem('admin','Administrador');
+        jugadorClient = $('#jugador').val();
+        //Enviando al servidor el nombre del jugador y el carne socket.emit('new jugador,jugador,carne');
+        socket.emit('new jugador', $('#jugador').val(),$('#carne').val()); 
+        //$("#form-ingresa-jugador").submit();
+        //window.location.href = '/Chat';
+
+        var contentChat =  "<h1 class='text-center'> Chat Jugadores y Administrador</h1>";
+            contentChat += "<br><div class='jumbotron'>";        
+            contentChat += "<div class='form-group'>";
+            contentChat += "<label for='message'> Mensaje </label>";
+            contentChat += "<textarea name='message' cols='10' rows='5' id='message' class='form-control'></textarea>";            
+            contentChat += "<button type='button' id='send-message' class='btn btn-warning btn-raised'> Enviar Mensaje </button></div>";
+            contentChat += "<div class='form-group'>";
+            contentChat += "<h3> Mensajes</h3>";
+            contentChat += "<ul id='messages'</ul></div></div>";
+              
+        $("#contenedor").html(contentChat);
+
+        $("#send-message").click(function(){
+          //socket.emit('new message',localStorage.getItem("name-jugador"),$("#message").val());          
+          socket.emit('new message',jugadorClient,$("#message").val());          
+          //alert("Click");
+          $("#message").val("")
+        });
+
+        //Recibir el mensaje procesado del server y pintarlo en todos los clientes
+        socket.on('new message',function(nameJugador,message){
+          console.log(message);
+          var liMessages = $('<li>').append("<strong>"+nameJugador+": </strong> "+message);
+          $("#messages").append(liMessages);
+        });
+      });*/
+      
+      
